@@ -19,7 +19,7 @@ void main(){
 
 	memset(&serverAddr, '\0', sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(PORT);
+	serverAddr.sin_port = htons(4444);
 	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
 	connect(clientSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
