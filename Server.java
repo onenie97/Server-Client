@@ -1,9 +1,12 @@
 import java.io.*;
 import java.net.*;
 
-class server{
-    public static void main(String[] args) {
-        try{
+class server
+{
+    public static void main(String[] args) 
+    {
+        try
+        {
             
             ServerSocket ss = new ServerSocket(1201);
             Socket s =ss.accept();
@@ -15,7 +18,8 @@ class server{
             
             String msgin= "",msgout="";
             
-            while(!msgin.equals("end")){
+            while(!msgin.equals("end"))
+            {
                 msgin = din.readUTF();
                 System.out.println(msgin);
                 msgout = br.readLine();
@@ -24,8 +28,10 @@ class server{
             }
             s.close();
             
-        }catch(Exception e){
+        }
+        catch(Exception e)
+        {
             //handle exceptions
         }
     }
-                
+}
