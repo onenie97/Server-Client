@@ -1,63 +1,81 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
-#include <netdb.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <arpa/inet.h> 
-
 int main(int argc, char *argv[])
 {
-    int sockfd = 0, n = 0;
-    char recvBuff[1024];
-    struct sockaddr_in serv_addr; 
+	int fd = 0;
+	char buff[1024];
+	
+	if(argc<3)
+	{
+		printf("Less no of arguments !!");
+		return 0;
+	}
 
-    if(argc != 2)
-    {
-        printf("\n Usage: %s <ip of server> \n",argv[0]);
-        return 1;
-    } 
+	//Setup Buffer Array
+	memset(buff, '0',sizeof(buff));	
 
-    memset(recvBuff, '0',sizeof(recvBuff));
-    if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    {
-        printf("\n Error : Could not create socket \n");
-        return 1;
-    } 
+	//Create Socket
+	fd = socket(AF_INET, SOCK_STREAM, 0);
+    	if(fd<0)
+	{
+		perror("Client Error: Socket not created succesfully");
+		return 0;
+	}
+	
+	//Structure to store details
+	struct sockaddr_in server; 
+	memset(&server, '0', sizeof(server)); 
 
-    memset(&serv_addr, '0', sizeof(serv_addr)); 
+	//Initialize	
+	server.sin_family = AF_INET;
+	server.sin_port =  htons(atoi(argv[2]));
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(5000); 
+	int in = inet_pton(AF_INET, argv[1], &server.sin_addr);
+	if(in<0)
+	{
+		perror("Client Error: IP not initialized succesfully");
+		return 0;
+	}
 
-    if(inet_pton(AF_INET, argv[1], &serv_addr.sin_addr)<=0)
-    {
-        printf("\n inet_pton error occured\n");
-        return 1;
-    } 
+	//Connect to given server	
+	in = connect(fd, (struct sockaddr *)&server, sizeof(server));
+	if(in<0)
+	{
+		perror("Client Error: Connection Failed.");
+		return 0;
+	}    	
 
-    if( connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    {
-       printf("\n Error : Connect Failed \n");
-       return 1;
-    } 
-
-    while ( (n = read(sockfd, recvBuff, sizeof(recvBuff)-1)) > 0)
-    {
-        recvBuff[n] = 0;
-        if(fputs(recvBuff, stdout) == EOF)
-        {
-            printf("\n Error : Fputs error\n");
-        }
-    } 
-
-    if(n < 0)
-    {
-        printf("\n Read error \n");
-    } 
-
-    return 0;
+	while(1)
+	{
+		printf("Please enter the message: ");
+    		bzero(buff,256);
+    		fgets(buff,255,stdin);
+    		
+		    printf("\nSending to SERVER: %s ",buff);
+	
+		/* Send message to the server */
+    		in = send(fd,buff,strlen(buff),0);
+		    if (in < 0) 
+		    {
+			 perror("\nClient Error: Writing to Server");
+		    	return 0;
+		    }
+		    
+		/* Now read server response */
+		    bzero(buff,256);
+		    in = recv(fd,buff,255,0);
+		    if (in < 0) 
+		    {
+			 perror("\nClient Error: Reading from Server");
+			return 0;
+		    }
+		    printf("\nReceived FROM SERVER: %s ",buff);
+	}
+	close(fd);
+	return 0;
 }
