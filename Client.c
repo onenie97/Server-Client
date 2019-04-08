@@ -1,81 +1,51 @@
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
-int main(int argc, char *argv[])
+#include<string.h>
+int main()
 {
-	int fd = 0;
-	char buff[1024];
-	
-	if(argc<3)
-	{
-		printf("Less no of arguments !!");
-		return 0;
-	}
-
-	//Setup Buffer Array
-	memset(buff, '0',sizeof(buff));	
-
-	//Create Socket
-	fd = socket(AF_INET, SOCK_STREAM, 0);
-    	if(fd<0)
-	{
-		perror("Client Error: Socket not created succesfully");
-		return 0;
-	}
-	
-	//Structure to store details
-	struct sockaddr_in server; 
-	memset(&server, '0', sizeof(server)); 
-
-	//Initialize	
-	server.sin_family = AF_INET;
-	server.sin_port =  htons(atoi(argv[2]));
-
-	int in = inet_pton(AF_INET, argv[1], &server.sin_addr);
-	if(in<0)
-	{
-		perror("Client Error: IP not initialized succesfully");
-		return 0;
-	}
-
-	//Connect to given server	
-	in = connect(fd, (struct sockaddr *)&server, sizeof(server));
-	if(in<0)
-	{
-		perror("Client Error: Connection Failed.");
-		return 0;
-	}    	
-
-	while(1)
-	{
-		printf("Please enter the message: ");
-    		bzero(buff,256);
-    		fgets(buff,255,stdin);
-    		
-		    printf("\nSending to SERVER: %s ",buff);
-	
-		/* Send message to the server */
-    		in = send(fd,buff,strlen(buff),0);
-		    if (in < 0) 
-		    {
-			 perror("\nClient Error: Writing to Server");
-		    	return 0;
-		    }
-		    
-		/* Now read server response */
-		    bzero(buff,256);
-		    in = recv(fd,buff,255,0);
-		    if (in < 0) 
-		    {
-			 perror("\nClient Error: Reading from Server");
-			return 0;
-		    }
-		    printf("\nReceived FROM SERVER: %s ",buff);
-	}
-	close(fd);
-	return 0;
+     printf("this is a client program\n");
+     struct sockaddr_in myaddr,clientaddr;
+     int newsockid;
+     int len;
+     int sockid,client_add;
+     sockid=socket(AF_INET,SOCK_STREAM,0);
+     if(sockid==-1)
+     perror("socket");
+     memset(&myaddr,0,sizeof myaddr);
+     myaddr.sin_port=htons(8765);
+     myaddr.sin_family=AF_INET;
+     myaddr.sin_addr.s_addr=inet_addr("127.0.0.1");
+     len=sizeof myaddr;
+      if((bind(sockid,(struct sockaddr*)&myaddr,sizeof myaddr))==-1)
+    perror("bind");
+     int p=connect(sockid,(struct sockaddr*)&myaddr,len);
+     if(p==-1)
+     perror("connect");
+     char msg[200];
+     int i=0;
+     char c;int l=0; char *buffer=(char *)(malloc(sizeof(char)*200)); int buffsize;
+     while(i<10)
+     {l=0;
+                printf("Client: ");
+                while((c=getchar())!='\n')
+                {
+            msg[l++]=c;
+                }
+                msg[l]='\0'; l++;
+                send(sockid,msg,l,0);
+                fflush(stdin);
+                newsockid=accept(sockid,(struct sockaddr*)&clientaddr,&client_add);
+                recv(newsockid,buffer,buffsize,0);
+                   l=0;
+                 fprintf(stdout, "server: %s", buffer);
+                  printf("\n");
+                i++;
+     }
+     close(sockid);
+     return 0;
 }
