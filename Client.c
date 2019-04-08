@@ -17,7 +17,7 @@ int main()
      if(sockid==-1)
      perror("socket");
      memset(&myaddr,0,sizeof myaddr);
-     myaddr.sin_port=htons(8765);
+     myaddr.sin_port=htons(3000);
      myaddr.sin_family=AF_INET;
      myaddr.sin_addr.s_addr=inet_addr("127.0.0.1");
      len=sizeof myaddr;
